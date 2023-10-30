@@ -1,0 +1,131 @@
+import React, { useState } from 'react';
+
+function Todo({ id, task, completed, removeTodo, toggleComplete, editTodo }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTask, setEditedTask] = useState(task);
+
+  const handleRemove = () => {
+    removeTodo(id);
+  };
+
+  const handleToggleComplete = () => {
+    toggleComplete(id);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (e) => {
+    setEditedTask(e.target.value);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    editTodo(id, editedTask);
+    setIsEditing(false);
+  };
+
+  return (
+    <div>
+      {isEditing ? (
+        <form onSubmit={handleEditSubmit}>
+          <input type="text" value={editedTask} onChange={handleEditChange} />
+          <button>Save</button>
+        </form>
+      ) : (
+        <>
+          <div style={{ textDecoration: completed ? 'line-through' : 'none' }}>
+            {task}
+          </div>
+          <button onClick={handleRemove}>X</button>
+          <button onClick={handleToggleComplete}>
+            {completed ? 'Mark as Incomplete' : 'Mark as Complete'}
+          </button>
+          <button onClick={handleEdit}>Edit</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function NewTodoForm({ addTodo }) {
+  const [task, setTask] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (task.trim() !== '') {
+      addTodo(task);
+      setTask('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Enter a task"
+        value={task}
+        onChange={(e) => setTask(e.target.value)}
+      />
+      <button>Add Todo</button>
+    </form>
+  );
+}
+
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (task) => {
+    const newTodo = { id: Date.now(), task, completed: false };
+    setTodos([...todos, newTodo]);
+  };
+
+  const removeTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const toggleComplete = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const editTodo = (id, updatedTask) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, task: updatedTask } : todo
+      )
+    );
+  };
+
+  return (
+    <div>
+      <NewTodoForm addTodo={addTodo} />
+      {todos.map((todo) => (
+        <Todo
+          key={todo.id}
+          id={todo.id}
+          task={todo.task}
+          completed={todo.completed}
+          removeTodo={removeTodo}
+          toggleComplete={toggleComplete}
+          editTodo={editTodo}
+        />
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div>
+      <h1>Todo App</h1>
+      <TodoList />
+    </div>
+  );
+}
+
+export default App;
